@@ -63,7 +63,7 @@ This is **Version 1.0** of the app.
 ---
 
 ## 📁 Folder Structure
-
+```
 root/
 │
 ├── app.py # Main app logic (Gradio)
@@ -74,7 +74,7 @@ root/
       ├──  im3.jpg # third image that depicts wrong orientation
       ├──  im4.jpg # fourth image that depicts correct orientation
       ├──  reference.jpg # this image is a reference to see which letter corresponds to what dimensions
-
+```
 ---
 
 ## 📬 Feedback
