@@ -14,35 +14,45 @@ This web-based app performs smart toilet rim analysis using AI segmentation mode
 
 1. **Correct Orientation Instructions**  
    When you open the app, you’ll first see guidance on how to orient your images properly before uploading.
+   <img width="1876" height="840" alt="image" src="https://github.com/user-attachments/assets/352c8886-7af1-4292-bccd-72dec7501373" />
 
-2. **Upload Images**  
+3. **Upload Images**  
    You need to upload **three specific images**:
    - 📷 Open toilet **without seat**
    - 📷 Open toilet **with seat**
    - 📷 Closed toilet
+<img width="1829" height="608" alt="image" src="https://github.com/user-attachments/assets/1ee5280b-7e89-4617-aa91-ab795a074baf" />
 
-3. **Run AI Segmentation & Analysis**  
+4. **Run AI Segmentation & Analysis**  
    Click the **“Let AI Do The Work”** button:
    - The app runs segmentation models to generate accurate binary masks of the toilet components.
    - Reference object (e.g., coin or matchbox) is detected and used to calculate the **pixel-to-cm scale**.
    - Ellipse fitting is applied to extract rim boundaries.
    - Key measurements (a–h) are computed based on your analysis needs.
+<img width="265" height="90" alt="image" src="https://github.com/user-attachments/assets/69aa5fee-eba2-4b1d-8ad3-6919f797874b" />
 
-4. **Error Analysis**  
+5. **Error Analysis**  
    - You’ll see 8 predicted values labeled **a to h**.
-   - Enter the **actual ground truth** values for each.
+   - Refer to the reference diagram to know what each letter represents.
+   - Select the mode (in cm/ in inches) that you prefer.
+   - Enter the **actual/true** values for each.
    - Click the **“Start Error Analysis”** button.
    - The app displays:
      - 📊 Individual errors for each measurement on the left.
      - 📈 A corresponding error graph on the right.
      - 🧮 **Average error percentage** at the bottom.
+<img width="343" height="400" alt="image" src="https://github.com/user-attachments/assets/116e1f80-072d-4c98-9f28-f98f09c4d313" />
+<img width="1845" height="680" alt="image" src="https://github.com/user-attachments/assets/9f2295f9-4a5e-4785-8587-5f30dfa66782" />
+<img width="1838" height="606" alt="image" src="https://github.com/user-attachments/assets/88a3e4b8-1612-4642-be93-fea7ddd8218e" />
+<img width="1836" height="859" alt="image" src="https://github.com/user-attachments/assets/1dfda791-f526-4126-b714-1e1fc69c7e9a" />
 
-5. **Download Full Report**  
+6. **Download Full Report**  
    - Once analysis is complete, a link is generated to download a `.zip` archive.
    - This zip contains:
      - All processed images
      - Measurements and predicted vs actual values
      - Error analysis graphs and summary
+<img width="1837" height="666" alt="image" src="https://github.com/user-attachments/assets/18a2d4ac-c1e2-49c6-8188-1ca16bed783d" />
 
 ---
 
@@ -80,5 +90,7 @@ root/
 ## 📬 Feedback
 
 Feel free to contact me at savaliyaheet19@gmail.com to know more about this project.
+
+      © 2025 HeetSavaliya
 
 ---
