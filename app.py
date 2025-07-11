@@ -2125,5 +2125,5 @@ import os
 port = int(os.environ.get("PORT", 7860))
 
 # 🚀 Launch App
-if __name__ == "__main__":
-    full_app_interface.launch(server_name="0.0.0.0", server_port=port,)
+# if __name__ == "__main__":
+full_app_interface.launch(server_name="0.0.0.0", server_port=port,)
