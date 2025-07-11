@@ -565,8 +565,8 @@ def analyze_rim_ellipse_red_p7(image_dict, mask_dict, ref_ratios):
         if pt is not None:
             pos = pt + offset
             plt.text(pos[0], pos[1], label, fontsize=9, color='white',
-                     ha='center', va='center',
-                     bbox=dict(facecolor='black', alpha=0.6, boxstyle='round,pad=0.3'))
+                    ha='center', va='center',
+                    bbox=dict(facecolor='black', alpha=0.6, boxstyle='round,pad=0.3'))
 
     plt.figure(figsize=(6, 6))
     plt.imshow(image)
@@ -1270,828 +1270,856 @@ def analyze_top_rim_width_p13(
 # ================================
 # 🧩 FINAL PART: Combined App Launcher
 # ================================
+import gradio as gr
+from urllib.parse import parse_qs
+
+SECRET_TOKEN = "3v80mdr2k3rjig98bv9mcotf89"
+# SECRET_TOKEN = os.getenv("ACCESS_TOKEN", "NO_TOKEN_SET")
+def check_token(request: gr.Request):
+    try:
+        query_str = request.request.url.query
+        query = parse_qs(query_str)
+        token = query.get("access", [""])[0]
+        if token == SECRET_TOKEN:
+            return gr.update(visible=True), gr.update(visible=False), gr.update(value="✅ Access Granted", visible=False)
+        else:
+            return gr.update(visible=False), gr.update(visible=True), gr.update(value="🚫 Unauthorized", visible=False)
+    except Exception as e:
+        print("Token check error:", e)
+        return gr.update(visible=False), gr.update(visible=True), gr.update(value="❌ Invalid request", visible=False)
 
 with gr.Blocks(title="🧪 Toilet Segmentation & Measurement App") as full_app_interface:
-    gr.Markdown("# 🚽 Smart Toilet Image Checker", elem_id="centered-title")
-    gr.Markdown("Just upload your toilet photos — then sit back and watch the AI work its magic!", elem_id="centered-title")
-    gr.Markdown("📘 **New here?** If you're not sure how to use this app, please check out the [step-by-step instructions](https://drive.google.com/file/d/1FmdJBWi046iscXAXlAh321Iyc5w8RHcc/view?usp=sharing).")
+    status_box = gr.Textbox(label="Status", visible=False)
+    protected_content = gr.Column(visible=False)
+    unauthorized_message = gr.Markdown("🚫 **Unauthorized access**", visible=False)
 
-    session_state = gr.State(init_session())
-    
-    with gr.Row():
-        gr.Markdown("### 📷 How to Upload Images Correctly (Example)")
-
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("❌ Wrong")
-            wrong1 = gr.Image(value="./static/im1.jpg", show_label=False, interactive=False, height=200)
-        with gr.Column():
-            gr.Markdown("❌ Wrong")
-            wrong2 = gr.Image(value="./static/im2.jpg", show_label=False, interactive=False, height=200)
-        with gr.Column():
-            gr.Markdown("❌ Wrong")
-            wrong3 = gr.Image(value="./static/im3.jpg", show_label=False, interactive=False, height=200)
-
-    with gr.Row():
-        with gr.Column():
-            z="filler"
-        with gr.Column():
-            gr.Markdown("✅ Correct")
-            correct = gr.Image(value="./static/im4.jpg", show_label=False, interactive=False, height=200)
-        with gr.Column():
-            z="filler"
-
-    binary_masks_p4 = gr.State()
-    image_dict_p4 = gr.State()
-    out_ref_ratios_p5 = gr.State()
-    out_rimellipse_ui_p7 = gr.State()
-    out_rimellipse_cm_p7 = gr.State()
-    out_rimellipse_inch_p7 = gr.State()
-    inner_top_p7 = gr.State()
-    dir_down_p7 = gr.State()
-    dir_right_p7 = gr.State()
-    btn_rimheight_p8 = gr.State()
-    rimheight_text_p8 = gr.State()
-    rim_height_px_p8 = gr.State()
-    rim_height_cm_p8 = gr.State()
-    rim_height_inch_p8 = gr.State()
-    inner_top_p8 = gr.State()
-    btn_measure_holewidth_p9 = gr.State()
-    hole_width_px_p9 = gr.State()
-    hole_width_cm_p9 = gr.State()
-    hole_width_inch_p9 = gr.State()
-    angle_deg_p9 = gr.State()
-    pt_min_p9 = gr.State()
-    pt_max_p9 = gr.State()
-    btn_top_to_hole_p10 = gr.State()
-    top_to_hole_line_px_p10 = gr.State()
-    top_to_hole_line_cm_p10 = gr.State()
-    top_to_hole_line_inch_p10 = gr.State()
-    angle_down_deg_p10 = gr.State()
-    angle_perp_deg_p10 = gr.State()
-    intersection_point_p10 = gr.State()
-    btn_ellipse_orient_p10 = gr.State()
-    ellipse_angle_deg_p10 = gr.State()
-    ellipse_center_p10 = gr.State()
-    ellipse_dir_down_p10 = gr.State()
-    ellipse_dir_right_p10 = gr.State()
-    updated_binary_masks_p4 = gr.State()
-    btn_rim_height_closed_p11 = gr.State()
-    rim_height_cm_p11 = gr.State()
-    rim_height_in_p11 = gr.State()
-    full_rim_height_cm_p11 = gr.State()
-    full_rim_height_in_p11 = gr.State()
-    closed_remaining_cm_p11 = gr.State()
-    closed_remaining_in_p11 = gr.State()
-    pt_start_p11 = gr.State()
-    btn_draw_remaining_p12 = gr.State()
-    remaining_angle_deg_p12 = gr.State()
-    pt_start_p12 = gr.State()
-    pt_end_p12 = gr.State()
-    btn_measure = gr.State()
-    out_pt_top = gr.State()
-    out_pt1 = gr.State()
-    out_pt2 = gr.State()
-    out_dist_px = gr.State()
-    out_dist_cm = gr.State()
-    out_dist_in = gr.State()
-    out_angle_deg = gr.State()
-    out_rim_measurements_p6 = gr.State()
-    out_rim_measurements_cm_p6 = gr.State()
-    out_rim_measurements_inch_p6 = gr.State()
-    models_holes_p2 = gr.State(None)
-    models_rim_p2 = gr.State(None)
-    models_coinref_p2 = gr.State(None)
-    device_p2 = gr.State(None)
-    gallery_segmentation_p4 = gr.State()
-    
     full_app_interface.load(
-        fn=lambda: [GLOBAL_HOLES, GLOBAL_RIM, GLOBAL_COIN, device_p2],
-        outputs=[models_holes_p2, models_rim_p2, models_coinref_p2, device_p2],
-        queue=False  # This event usually doesn't need to be queued
+        fn=check_token,
+        inputs=[],
+        outputs=[protected_content, unauthorized_message, status_box]
     )
-    
-    gr.HTML("""<style>
-                #centered-title {
-                    text-align: center;
-                    width: 100%
-                }
-                #footer-text{
-                    text-align: center;
-                    font-size: 14px;
-                    color: #666;
-                    margin-top: 40px;
-                    padding-top: 20px;
-                    border-top: 1px solid #ddd;
-                    line-height: 1.6
-                }
-                #pretty-box textarea {
-                    font-size: 16px;
-                    font-family: monospace;
-                    border: 2px solid #ccc;
-                    border-radius: 12px;
-                    padding: 10px 14px;
-                    resize: none;
-                    height: 50px;
-                    line-height: 1.4;
-                    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-                    min-width: 200px;
-                    max-width: 100%;
 
-                }
-                
-                #pretty-box label {
-                    text-align: center;
-                    font-size: 18px;
-                }
-                
-                #fit-box {
-                    min-width: 200px;
-                    margin: auto;
-                }
-                .gr-block.gr-group {
-                    background-color: inherit !important;
-                    padding: 16px;
-                }
-            </style>""")
-    
-    def rotate_image_live(img):
-        if img is None:
-            return None
+    with protected_content:
+        gr.Markdown("# 🚽 Smart Toilet Image Checker", elem_id="centered-title")
+        gr.Markdown("Just upload your toilet photos — then sit back and watch the AI work its magic!", elem_id="centered-title")
+        gr.Markdown("📘 **New here?** If you're not sure how to use this app, please check out the [step-by-step instructions](https://drive.google.com/file/d/1FmdJBWi046iscXAXlAh321Iyc5w8RHcc/view?usp=sharing).")
 
-        import numpy as np
-        import cv2
-        from PIL import Image
-
-        img_np = np.array(img)
-        h, w = img_np.shape[:2]
-
-        # Transpose shape for 90-degree rotation (clockwise)
-        rotated = cv2.rotate(img_np, cv2.ROTATE_90_CLOCKWISE)
-
-        return Image.fromarray(rotated)
-
-    import gradio as gr
-    from PIL import Image
-    import os
-
-    with gr.Row():
-        with gr.Column():
-            gr.Markdown("### 📸 Open Toilet (No Seat)")
-            uploader1 = gr.UploadButton("Upload Image", file_types=["image"])
-            input1 = gr.Image(height=500, width=800, label="Preview", interactive=False, visible=False)
-            filename1 = gr.Markdown()
-            rotte1 = gr.Button("Rotate", visible=False)
-
-        with gr.Column():
-            gr.Markdown("### 📸 Open Toilet (With Seat)")
-            uploader2 = gr.UploadButton("Upload Image", file_types=["image"])
-            input2 = gr.Image(height=500, width=800, label="Preview", interactive=False, visible=False)
-            filename2 = gr.Markdown()
-            rotte2 = gr.Button("Rotate", visible=False)
-
-        with gr.Column():
-            gr.Markdown("### 📸 Closed Lid Toilet")
-            uploader3 = gr.UploadButton("Upload Image", file_types=["image"])
-            input3 = gr.Image(height=500, width=800, label="Preview", interactive=False, visible=False)
-            filename3 = gr.Markdown()
-            rotte3 = gr.Button("Rotate", visible=False)
-    
-    def load_image_and_filename(file_obj):
-        if file_obj is None:
-            return None, "", gr.update(visible=False), gr.update(visible=False)
-        filepath = file_obj.name
-        img = Image.open(filepath)
-        filename = os.path.basename(filepath)
-        return img, f"📁 Filename: {filename}", gr.update(visible=True), gr.update(visible=True)
-
-    uploader1.upload(load_image_and_filename, inputs=uploader1, outputs=[input1, filename1, input1, rotte1])
-    uploader2.upload(load_image_and_filename, inputs=uploader2, outputs=[input2, filename2, input2, rotte2])
-    uploader3.upload(load_image_and_filename, inputs=uploader3, outputs=[input3, filename3, input3, rotte3])
+        session_state = gr.State(init_session())
         
-    rotte1.click(fn=rotate_image_live, inputs=[input1], outputs=input1)
-    rotte2.click(fn=rotate_image_live, inputs=[input2], outputs=input2)
-    rotte3.click(fn=rotate_image_live, inputs=[input3], outputs=input3)
+        with gr.Row():
+            gr.Markdown("### 📷 How to Upload Images Correctly (Example)")
 
-    output = gr.State()
+        with gr.Row():
+            with gr.Column():
+                gr.Markdown("❌ Wrong")
+                wrong1 = gr.Image(value="./static/im1.jpg", show_label=False, interactive=False, height=200)
+            with gr.Column():
+                gr.Markdown("❌ Wrong")
+                wrong2 = gr.Image(value="./static/im2.jpg", show_label=False, interactive=False, height=200)
+            with gr.Column():
+                gr.Markdown("❌ Wrong")
+                wrong3 = gr.Image(value="./static/im3.jpg", show_label=False, interactive=False, height=200)
 
-    # Step 2 onwards (Auto-triggered after Part 3)
-    with gr.Row():
-        run_pipeline_btn = gr.Button("🧠 'Let AI Do the Work'")
-        run_pipeline_btn.click(
-            fn=handle_upload,
-            inputs=[input1, input2, input3, session_state],
-            outputs=output
+        with gr.Row():
+            with gr.Column():
+                z="filler"
+            with gr.Column():
+                gr.Markdown("✅ Correct")
+                correct = gr.Image(value="./static/im4.jpg", show_label=False, interactive=False, height=200)
+            with gr.Column():
+                z="filler"
+
+        binary_masks_p4 = gr.State()
+        image_dict_p4 = gr.State()
+        out_ref_ratios_p5 = gr.State()
+        out_rimellipse_ui_p7 = gr.State()
+        out_rimellipse_cm_p7 = gr.State()
+        out_rimellipse_inch_p7 = gr.State()
+        inner_top_p7 = gr.State()
+        dir_down_p7 = gr.State()
+        dir_right_p7 = gr.State()
+        btn_rimheight_p8 = gr.State()
+        rimheight_text_p8 = gr.State()
+        rim_height_px_p8 = gr.State()
+        rim_height_cm_p8 = gr.State()
+        rim_height_inch_p8 = gr.State()
+        inner_top_p8 = gr.State()
+        btn_measure_holewidth_p9 = gr.State()
+        hole_width_px_p9 = gr.State()
+        hole_width_cm_p9 = gr.State()
+        hole_width_inch_p9 = gr.State()
+        angle_deg_p9 = gr.State()
+        pt_min_p9 = gr.State()
+        pt_max_p9 = gr.State()
+        btn_top_to_hole_p10 = gr.State()
+        top_to_hole_line_px_p10 = gr.State()
+        top_to_hole_line_cm_p10 = gr.State()
+        top_to_hole_line_inch_p10 = gr.State()
+        angle_down_deg_p10 = gr.State()
+        angle_perp_deg_p10 = gr.State()
+        intersection_point_p10 = gr.State()
+        btn_ellipse_orient_p10 = gr.State()
+        ellipse_angle_deg_p10 = gr.State()
+        ellipse_center_p10 = gr.State()
+        ellipse_dir_down_p10 = gr.State()
+        ellipse_dir_right_p10 = gr.State()
+        updated_binary_masks_p4 = gr.State()
+        btn_rim_height_closed_p11 = gr.State()
+        rim_height_cm_p11 = gr.State()
+        rim_height_in_p11 = gr.State()
+        full_rim_height_cm_p11 = gr.State()
+        full_rim_height_in_p11 = gr.State()
+        closed_remaining_cm_p11 = gr.State()
+        closed_remaining_in_p11 = gr.State()
+        pt_start_p11 = gr.State()
+        btn_draw_remaining_p12 = gr.State()
+        remaining_angle_deg_p12 = gr.State()
+        pt_start_p12 = gr.State()
+        pt_end_p12 = gr.State()
+        btn_measure = gr.State()
+        out_pt_top = gr.State()
+        out_pt1 = gr.State()
+        out_pt2 = gr.State()
+        out_dist_px = gr.State()
+        out_dist_cm = gr.State()
+        out_dist_in = gr.State()
+        out_angle_deg = gr.State()
+        out_rim_measurements_p6 = gr.State()
+        out_rim_measurements_cm_p6 = gr.State()
+        out_rim_measurements_inch_p6 = gr.State()
+        models_holes_p2 = gr.State(None)
+        models_rim_p2 = gr.State(None)
+        models_coinref_p2 = gr.State(None)
+        device_p2 = gr.State(None)
+        gallery_segmentation_p4 = gr.State()
+        
+        full_app_interface.load(
+            fn=lambda: [GLOBAL_HOLES, GLOBAL_RIM, GLOBAL_COIN, device_p2],
+            outputs=[models_holes_p2, models_rim_p2, models_coinref_p2, device_p2],
+            queue=False  # This event usually doesn't need to be queued
         )
-    with gr.Row():
-        process = gr.Markdown("")
-    with gr.Column(visible=False) as group_to_show:
-
-        with gr.Row():
-            gr.Markdown("# Coin Reference Detection:", elem_id="centered-title")
-        with gr.Row():
-            out_ref_image_p5 = gr.Image(label="🪙 Coin Reference Detection", height=600, width=800, visible=False)
-        with gr.Row():
-            with gr.Column():
-                z="filler"
-            with gr.Column(elem_id="fit-box"):
-                ref_ratios_str = gr.Textbox(label="🪙 Coin Reference Ratios", interactive=False, elem_id='pretty-box', visible=False)
-            with gr.Column():
-                z="filler"
-
-        with gr.Row():
-            gr.Markdown("# Seat Dimensions:", elem_id="centered-title")
-        with gr.Row():
-            out_rim_image_p6 = gr.Image(label="📏 Rim Width", height=600, width=800, visible=False)
-        with gr.Row():
-            with gr.Column():
-                z="filler"
-            with gr.Column(elem_id="fit-box"):
-                seat_measurement_str = gr.Textbox(label="📏 Seat Dimensions:", interactive=False, elem_id='pretty-box', visible=False)
-            with gr.Column():
-                z="filler"
-
-        with gr.Row():
-            gr.Markdown("# Rim Dimensions:", elem_id="centered-title")
-        with gr.Row():
-            out_rimellipse_image_p7 = gr.Image(label="📏 Rim Dimensions", height=600, width=800, visible=False)
-        with gr.Row():
-            with gr.Column():
-                z="filler"
-            with gr.Column(elem_id="fit-box"):
-                rim_measurement_str = gr.Textbox(label="📏 Rim Dimensions:", interactive=False, elem_id='pretty-box', visible=False)
-            with gr.Column():
-                z="filler"
-
-        with gr.Row():
-            gr.Markdown("# Length of Rim (Inner Top to Outer Bottom):", elem_id="centered-title")
-        with gr.Row():
-            rimheight_image_p8 = gr.Image(label="📏 Red Line Rim", height=600, width=800, visible=False)
-        with gr.Row():
-            with gr.Column():
-                z="filler"
-            with gr.Column(elem_id="fit-box"):
-                rim_height_str = gr.Textbox(label="📏 Rim Height:", interactive=False, elem_id='pretty-box', visible=False)
-            with gr.Column():
-                z="filler"
-
-        with gr.Row():
-            gr.Markdown("# Hole Width:", elem_id="centered-title")
-        with gr.Row():
-            holewidth_image_p9 = gr.Image(label="🕳️ Hole Width", height=600, width=800, visible=False)
-        with gr.Row():
-            with gr.Column():
-                z="filler"
-            with gr.Column(elem_id="fit-box"):
-                hole_width_str = gr.Textbox(label="🕳️ Hole Width:", interactive=False, elem_id='pretty-box', visible=False)
-            with gr.Column():
-                z="filler"
-
-        with gr.Row():
-            gr.Markdown("# Distance from Holes to Top of Inner Rim:", elem_id="centered-title")
-        with gr.Row():
-            rim_to_hole_img_p10 = gr.Image(label="⬇️ Rim Line (Open)", height=600, width=800, visible=False)
-        with gr.Row():
-            with gr.Column():
-                z="filler"
-            with gr.Column(elem_id="fit-box"):
-                hole_to_top_str = gr.Textbox(label="⬇️ Rim to Hole Dimensions:", interactive=False, elem_id='pretty-box', visible=False)
-            with gr.Column():
-                z="filler"
-
-        with gr.Row():
-            gr.Markdown("# Direction of Closed Lid Toilet:", elem_id="centered-title")
-        with gr.Row():
-            ellipse_viz_image_p10 = gr.Image(label="🔄 Ellipse Arrows", height=600, width=800, visible=False)
-        with gr.Row():
-            with gr.Column():
-                z="filler"
-            with gr.Column(elem_id="fit-box"):
-                direction_str = gr.Textbox(label="🔄 Direction:", interactive=False, elem_id='pretty-box', visible=False)
-            with gr.Column():
-                z="filler"
-
-        with gr.Row():
-            gr.Markdown("# Total Height of Entire Toilet:", elem_id="centered-title")
-        with gr.Row():
-            rim_height_vis_p11 = gr.Image(label="📏 Rim Height on Closed", height=600, width=800, visible=False)
-        with gr.Row():
-            with gr.Column():
-                z="filler"
-            with gr.Column(elem_id="fit-box"):
-                total_height_str = gr.Textbox(label="📏 Total Height:", interactive=False, elem_id='pretty-box', visible=False)
-            with gr.Column():
-                z="filler"
-
-        with gr.Row():
-            gr.Markdown("# Distance from Top Portion of Toilet to Holes:", elem_id="centered-title")
-        with gr.Row():
-            remaining_lid_img_p12 = gr.Image(label="📏 Remaining Lid Portion", height=600, width=800, visible=False)
-        with gr.Row():
-            with gr.Column():
-                z="filler"
-            with gr.Column(elem_id="fit-box"):
-                remaining_str = gr.Textbox(label="📏 Remaining Portion Dimensions:", interactive=False, elem_id='pretty-box', visible=False)
-            with gr.Column():
-                z="filler"
-
-        with gr.Row():
-            gr.Markdown("# Width of Top part of Toilet:", elem_id="centered-title")
-        with gr.Row():
-            out_image = gr.Image(label="📏 Top Rim Width", height=600, width=800, visible=False)
-        with gr.Row():
-            with gr.Column():
-                z="filler"
-            with gr.Column(elem_id="fit-box"):
-                top_width_str = gr.Textbox(label="📏 Top Width:", interactive=False, elem_id='pretty-box', visible=False)
-            with gr.Column():
-                z="filler"
         
-        gr.Markdown("## 🎯 Prediction Accuracy Analysis", elem_id="centered-title")
+        gr.HTML("""<style>
+                    #centered-title {
+                        text-align: center;
+                        width: 100%
+                    }
+                    #footer-text{
+                        text-align: center;
+                        font-size: 14px;
+                        color: #666;
+                        margin-top: 40px;
+                        padding-top: 20px;
+                        border-top: 1px solid #ddd;
+                        line-height: 1.6
+                    }
+                    #pretty-box textarea {
+                        font-size: 16px;
+                        font-family: monospace;
+                        border: 2px solid #ccc;
+                        border-radius: 12px;
+                        padding: 10px 14px;
+                        resize: none;
+                        height: 50px;
+                        line-height: 1.4;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+                        min-width: 200px;
+                        max-width: 100%;
 
-        with gr.Row():
-            gr.Markdown("### 🖼️ Reference Diagram", elem_id="centered-title")
-        with gr.Row():
-            ref_image = gr.Image(value="./static/reference.jpg", interactive=False, label="Measurement Guide", height=600)
-
-        unit_dropdown = gr.Radio(choices=["in", "cm"], label="Select Unit", value="in")
-
-        with gr.Row():
-            gr.Markdown("### 🧾 Predicted vs Actual Values Table", elem_id='centered-title')
-
-        with gr.Row():
-            gr.Markdown("### 📊 Predicted vs Actual Comparison")
-
-        with gr.Column():
-            # First row: a, b, c, d
-            with gr.Row():
-                with gr.Column():
-                    a1 = gr.Number(label="a (Predicted)", interactive=False)
-                    a2 = gr.Number(label="a (Actual)")
-                with gr.Column():
-                    b1 = gr.Number(label="b (Predicted)", interactive=False)
-                    b2 = gr.Number(label="b (Actual)")
-            with gr.Row():
-                with gr.Column():
-                    c1 = gr.Number(label="c (Predicted)", interactive=False)
-                    c2 = gr.Number(label="c (Actual)")
-                with gr.Column():
-                    d1 = gr.Number(label="d (Predicted)", interactive=False)
-                    d2 = gr.Number(label="d (Actual)")
-            
-            # Second row: e, f, g, h
-            with gr.Row():
-                with gr.Column():
-                    e1 = gr.Number(label="e (Predicted)", interactive=False)
-                    e2 = gr.Number(label="e (Actual)")
-                with gr.Column():
-                    f1 = gr.Number(label="f (Predicted)", interactive=False)
-                    f2 = gr.Number(label="f (Actual)")
-            with gr.Row():
-                with gr.Column():
-                    g1 = gr.Number(label="g (Predicted)", interactive=False)
-                    g2 = gr.Number(label="g (Actual)")
-                with gr.Column():
-                    h1 = gr.Number(label="h (Predicted)", interactive=False)
-                    h2 = gr.Number(label="h (Actual)")
+                    }
+                    
+                    #pretty-box label {
+                        text-align: center;
+                        font-size: 18px;
+                    }
+                    
+                    #fit-box {
+                        min-width: 200px;
+                        margin: auto;
+                    }
+                    .gr-block.gr-group {
+                        background-color: inherit !important;
+                        padding: 16px;
+                    }
+                </style>""")
         
-        submit_btn = gr.Button("🎯 Evaluate Accuracy")
-        with gr.Row():
-            progress = gr.Markdown("")
-        
-        with gr.Column(visible=False) as error:
-            with gr.Row():
-                with gr.Column():
-                    gr.Markdown("🧾 Individual Error %", elem_id='centered-title')
-                    result_json = gr.JSON(label="🧾 Individual Error %")
-                with gr.Column():
-                    gr.Markdown("📉 Error Plot", elem_id='centered-title')
-                    error_plot = gr.Image(label="📉 Error Plot", height=400, width=600, interactive=False, visible=False)
-            with gr.Row():
-                avg_error_text = gr.Textbox(label="🎯 Average Error %", interactive=False, elem_id='centered-title')
-            
-            with gr.Row():
-                gr.Markdown("📥 Download All Results", elem_id='centered-title')
-            with gr.Row():
-                download_all_file = gr.File(label="📦 Your Download")
-    
-    run_pipeline_btn.click(fn=lambda: gr.update(visible=True), outputs=group_to_show)
-    run_pipeline_btn.click(fn=lambda: gr.update(value="🔄 processing... (Please Wait)"), outputs=process)
-    submit_btn.click(fn=lambda: gr.update(value="🔄 Calculating Error Percentages... (Please Wait)"), outputs=progress)
-        
-    import gradio as gr
-    
-    def get_predictions_by_unit(unit, closed_remaining_in, top_to_hole_line_inch,
-                            hole_width_inch, out_rimellipse_inch, rim_height_inch, out_dist_in):
-        # Compute values in inches
-        a1 = abs(closed_remaining_in - top_to_hole_line_inch)
-        b1 = top_to_hole_line_inch
-        c1 = hole_width_inch
-        d1 = float(out_rimellipse_inch["right_inner"]) * 2
-        e1 = float(out_rimellipse_inch["down_inner"]) * 2
-        f1 = float(out_rimellipse_inch["right_outer"]) * 2
-        g1 = rim_height_inch
-        h1 = out_dist_in
+        def rotate_image_live(img):
+            if img is None:
+                return None
 
-        if unit == "in":
-            return [round(a1, 2), round(b1, 2), round(c1, 2), round(d1, 2), round(e1, 2), round(f1, 2), round(g1, 2), round(h1, 2)] + [gr.update(value="✅ Process Complete.")]
-        elif unit == "cm":
-            return [round(x * 2.54, 2) for x in [a1, b1, c1, d1, e1, f1, g1, h1]] + [gr.update(value="✅ Process Complete.")]
-        else:
-            return [0.0] * 8 + [gr.update(value="✅ Process Complete.")]
+            import numpy as np
+            import cv2
+            from PIL import Image
 
-    def compare_measurements(a1, b1, c1, d1, e1, f1, g1, h1, a2, b2, c2, d2, e2, f2, g2, h2):
-        a2, b2, c2, d2, e2, f2, g2, h2 = float(a2), float(b2), float(c2), float(d2), float(e2), float(f2), float(g2), float(h2)
-        a1, b1, c1, d1, e1, f1, g1, h1 = float(a1), float(b1), float(c1), float(d1), float(e1), float(f1), float(g1), float(h1)
-        def error(gt, pred):
-            if gt == 0:
-                return "N/A"
-            return f"{abs(gt - pred) / gt * 100:.2f}%"
+            img_np = np.array(img)
+            h, w = img_np.shape[:2]
 
-        errors = {
-            "a": error(a2, a1),
-            "b": error(b2, b1),
-            "c": error(c2, c1),
-            "d": error(d2, d1),
-            "e": error(e2, e1),
-            "f": error(f2, f1),
-            "g": error(g2, g1),
-            "h": error(h2, h1)
-        }
+            # Transpose shape for 90-degree rotation (clockwise)
+            rotated = cv2.rotate(img_np, cv2.ROTATE_90_CLOCKWISE)
 
-        valid_errors = [
-            abs(gt - pred) / gt * 100
-            for gt, pred in [
-                (a2, a1), (b2, b1), (c2, c1), (d2, d1), (e2, e1), (f2, f1), (g2, g1), (h2, h1)
-            ] if gt != 0
-        ]
+            return Image.fromarray(rotated)
 
-        avg_error = f"{sum(valid_errors)/len(valid_errors):.2f}%" if valid_errors else "N/A"
-
-        return errors, f"✅ Average Error: {avg_error}"
-
-    def update_preds(unit, closed_remaining_in_p11, top_to_hole_line_inch_p10, hole_width_inch_p9, out_rimellipse_inch_p7, rim_height_inch_p8, out_dist_in):
-        return get_predictions_by_unit(unit, closed_remaining_in_p11, top_to_hole_line_inch_p10,hole_width_inch_p9, out_rimellipse_inch_p7,rim_height_inch_p8, out_dist_in)
-    
-    unit_dropdown.change(
-        fn=update_preds,
-        inputs=[unit_dropdown, closed_remaining_in_p11, top_to_hole_line_inch_p10, hole_width_inch_p9, out_rimellipse_inch_p7, rim_height_inch_p8, out_dist_in],
-        outputs=[a1, b1, c1, d1, e1, f1, g1, h1, process]
-    )
-    
-    import matplotlib.pyplot as plt
-    from PIL import Image
-    import io
-    
-    def plot_error_graph(a2, b2, c2, d2, e2, f2, g2, h2, a1, b1, c1, d1, e1, f1, g1, h1):
-        labels = list("abcdefgh")
-        pred_vals = [float(x) for x in [a1, b1, c1, d1, e1, f1, g1, h1]]
-        true_vals = [float(x) for x in [a2, b2, c2, d2, e2, f2, g2, h2]]
-
-        errors = []
-        for pred, true in zip(pred_vals, true_vals):
-            if true == 0:
-                errors.append(0)
-            else:
-                err = abs(pred - true) / true * 100
-                errors.append(err)
-
-        # Plotting
-        fig, ax = plt.subplots(figsize=(8, 4))
-        ax.bar(labels, errors, color="#f05a28")
-        ax.set_ylim(0, max(errors) * 1.2 if errors else 1)
-        ax.set_ylabel("Error (%)")
-        ax.set_xlabel("Parameter")
-        ax.set_title("Individual Error per Parameter")
-
-        # Convert plot to PIL Image
-        buf = io.BytesIO()
-        plt.tight_layout()
-        plt.savefig(buf, format='png')
-        plt.close(fig)
-        buf.seek(0)
-        img = Image.open(buf)
-
-        return gr.update(value=img, visible=True)
-    
-    submit_btn.click(
-        fn=lambda *args: (
-            compare_measurements(*args)[0],
-            compare_measurements(*args)[1],
-            (plot_error_graph(*args))
-        ),
-        inputs=[a1, b1, c1, d1, e1, f1, g1, h1, a2, b2, c2, d2, e2, f2, g2, h2],
-        outputs=[result_json, avg_error_text, error_plot]
-    )
-    
-    def download_all_results_combined(
-        input1, input2, input3, gallery_segmentation_p4, out_ref_image_p5, ref_ratios_str, out_rim_image_p6, seat_measurement_str,
-        out_rimellipse_image_p7, rim_measurement_str, rimheight_image_p8, rim_height_str, holewidth_image_p9, hole_width_str,
-        rim_to_hole_img_p10, hole_to_top_str, ellipse_viz_image_p10, direction_str, rim_height_vis_p11, total_height_str,
-        remaining_lid_img_p12, remaining_str, out_image, top_width_str, a1, b1, c1, d1, e1, f1, g1, h1, a2, b2, c2, d2, e2, f2, g2,
-        h2, result_json, error_plot, avg_error_text
-    ):
-        import os, zipfile, tempfile
+        import gradio as gr
         from PIL import Image
+        import os
 
-        temp_dir = tempfile.mkdtemp()
-        zip_path = os.path.join(tempfile.gettempdir(), "all_results.zip")
+        with gr.Row():
+            with gr.Column():
+                gr.Markdown("### 📸 Open Toilet (No Seat)")
+                uploader1 = gr.UploadButton("Upload Image", file_types=["image"])
+                input1 = gr.Image(height=500, width=800, label="Preview", interactive=False, visible=False)
+                filename1 = gr.Markdown()
+                rotte1 = gr.Button("Rotate", visible=False)
 
-        with zipfile.ZipFile(zip_path, "w") as zipf:
+            with gr.Column():
+                gr.Markdown("### 📸 Open Toilet (With Seat)")
+                uploader2 = gr.UploadButton("Upload Image", file_types=["image"])
+                input2 = gr.Image(height=500, width=800, label="Preview", interactive=False, visible=False)
+                filename2 = gr.Markdown()
+                rotte2 = gr.Button("Rotate", visible=False)
 
-            # Save images if present
-            image_dict = {
-                "input1": input1,
-                "input2": input2,
-                "input3": input3,
-                "gallery_segmentation_p4": gallery_segmentation_p4,
-                "out_ref_image_p5": out_ref_image_p5,
-                "out_rim_image_p6": out_rim_image_p6,
-                "out_rimellipse_image_p7": out_rimellipse_image_p7,
-                "rimheight_image_p8": rimheight_image_p8,
-                "holewidth_image_p9": holewidth_image_p9,
-                "rim_to_hole_img_p10": rim_to_hole_img_p10,
-                "ellipse_viz_image_p10": ellipse_viz_image_p10,
-                "rim_height_vis_p11": rim_height_vis_p11,
-                "remaining_lid_img_p12": remaining_lid_img_p12,
-                "out_image": out_image,
-                "error_plot": error_plot
+            with gr.Column():
+                gr.Markdown("### 📸 Closed Lid Toilet")
+                uploader3 = gr.UploadButton("Upload Image", file_types=["image"])
+                input3 = gr.Image(height=500, width=800, label="Preview", interactive=False, visible=False)
+                filename3 = gr.Markdown()
+                rotte3 = gr.Button("Rotate", visible=False)
+        
+        def load_image_and_filename(file_obj):
+            if file_obj is None:
+                return None, "", gr.update(visible=False), gr.update(visible=False)
+            filepath = file_obj.name
+            img = Image.open(filepath)
+            filename = os.path.basename(filepath)
+            return img, f"📁 Filename: {filename}", gr.update(visible=True), gr.update(visible=True)
+
+        uploader1.upload(load_image_and_filename, inputs=uploader1, outputs=[input1, filename1, input1, rotte1])
+        uploader2.upload(load_image_and_filename, inputs=uploader2, outputs=[input2, filename2, input2, rotte2])
+        uploader3.upload(load_image_and_filename, inputs=uploader3, outputs=[input3, filename3, input3, rotte3])
+            
+        rotte1.click(fn=rotate_image_live, inputs=[input1], outputs=input1)
+        rotte2.click(fn=rotate_image_live, inputs=[input2], outputs=input2)
+        rotte3.click(fn=rotate_image_live, inputs=[input3], outputs=input3)
+
+        output = gr.State()
+
+        # Step 2 onwards (Auto-triggered after Part 3)
+        with gr.Row():
+            run_pipeline_btn = gr.Button("🧠 'Let AI Do the Work'")
+            run_pipeline_btn.click(
+                fn=handle_upload,
+                inputs=[input1, input2, input3, session_state],
+                outputs=output
+            )
+        with gr.Row():
+            process = gr.Markdown("")
+        with gr.Column(visible=False) as group_to_show:
+
+            with gr.Row():
+                gr.Markdown("# Coin Reference Detection:", elem_id="centered-title")
+            with gr.Row():
+                out_ref_image_p5 = gr.Image(label="🪙 Coin Reference Detection", height=600, width=800, visible=False)
+            with gr.Row():
+                with gr.Column():
+                    z="filler"
+                with gr.Column(elem_id="fit-box"):
+                    ref_ratios_str = gr.Textbox(label="🪙 Coin Reference Ratios", interactive=False, elem_id='pretty-box', visible=False)
+                with gr.Column():
+                    z="filler"
+
+            with gr.Row():
+                gr.Markdown("# Seat Dimensions:", elem_id="centered-title")
+            with gr.Row():
+                out_rim_image_p6 = gr.Image(label="📏 Rim Width", height=600, width=800, visible=False)
+            with gr.Row():
+                with gr.Column():
+                    z="filler"
+                with gr.Column(elem_id="fit-box"):
+                    seat_measurement_str = gr.Textbox(label="📏 Seat Dimensions:", interactive=False, elem_id='pretty-box', visible=False)
+                with gr.Column():
+                    z="filler"
+
+            with gr.Row():
+                gr.Markdown("# Rim Dimensions:", elem_id="centered-title")
+            with gr.Row():
+                out_rimellipse_image_p7 = gr.Image(label="📏 Rim Dimensions", height=600, width=800, visible=False)
+            with gr.Row():
+                with gr.Column():
+                    z="filler"
+                with gr.Column(elem_id="fit-box"):
+                    rim_measurement_str = gr.Textbox(label="📏 Rim Dimensions:", interactive=False, elem_id='pretty-box', visible=False)
+                with gr.Column():
+                    z="filler"
+
+            with gr.Row():
+                gr.Markdown("# Length of Rim (Inner Top to Outer Bottom):", elem_id="centered-title")
+            with gr.Row():
+                rimheight_image_p8 = gr.Image(label="📏 Red Line Rim", height=600, width=800, visible=False)
+            with gr.Row():
+                with gr.Column():
+                    z="filler"
+                with gr.Column(elem_id="fit-box"):
+                    rim_height_str = gr.Textbox(label="📏 Rim Height:", interactive=False, elem_id='pretty-box', visible=False)
+                with gr.Column():
+                    z="filler"
+
+            with gr.Row():
+                gr.Markdown("# Hole Width:", elem_id="centered-title")
+            with gr.Row():
+                holewidth_image_p9 = gr.Image(label="🕳️ Hole Width", height=600, width=800, visible=False)
+            with gr.Row():
+                with gr.Column():
+                    z="filler"
+                with gr.Column(elem_id="fit-box"):
+                    hole_width_str = gr.Textbox(label="🕳️ Hole Width:", interactive=False, elem_id='pretty-box', visible=False)
+                with gr.Column():
+                    z="filler"
+
+            with gr.Row():
+                gr.Markdown("# Distance from Holes to Top of Inner Rim:", elem_id="centered-title")
+            with gr.Row():
+                rim_to_hole_img_p10 = gr.Image(label="⬇️ Rim Line (Open)", height=600, width=800, visible=False)
+            with gr.Row():
+                with gr.Column():
+                    z="filler"
+                with gr.Column(elem_id="fit-box"):
+                    hole_to_top_str = gr.Textbox(label="⬇️ Rim to Hole Dimensions:", interactive=False, elem_id='pretty-box', visible=False)
+                with gr.Column():
+                    z="filler"
+
+            with gr.Row():
+                gr.Markdown("# Direction of Closed Lid Toilet:", elem_id="centered-title")
+            with gr.Row():
+                ellipse_viz_image_p10 = gr.Image(label="🔄 Ellipse Arrows", height=600, width=800, visible=False)
+            with gr.Row():
+                with gr.Column():
+                    z="filler"
+                with gr.Column(elem_id="fit-box"):
+                    direction_str = gr.Textbox(label="🔄 Direction:", interactive=False, elem_id='pretty-box', visible=False)
+                with gr.Column():
+                    z="filler"
+
+            with gr.Row():
+                gr.Markdown("# Total Height of Entire Toilet:", elem_id="centered-title")
+            with gr.Row():
+                rim_height_vis_p11 = gr.Image(label="📏 Rim Height on Closed", height=600, width=800, visible=False)
+            with gr.Row():
+                with gr.Column():
+                    z="filler"
+                with gr.Column(elem_id="fit-box"):
+                    total_height_str = gr.Textbox(label="📏 Total Height:", interactive=False, elem_id='pretty-box', visible=False)
+                with gr.Column():
+                    z="filler"
+
+            with gr.Row():
+                gr.Markdown("# Distance from Top Portion of Toilet to Holes:", elem_id="centered-title")
+            with gr.Row():
+                remaining_lid_img_p12 = gr.Image(label="📏 Remaining Lid Portion", height=600, width=800, visible=False)
+            with gr.Row():
+                with gr.Column():
+                    z="filler"
+                with gr.Column(elem_id="fit-box"):
+                    remaining_str = gr.Textbox(label="📏 Remaining Portion Dimensions:", interactive=False, elem_id='pretty-box', visible=False)
+                with gr.Column():
+                    z="filler"
+
+            with gr.Row():
+                gr.Markdown("# Width of Top part of Toilet:", elem_id="centered-title")
+            with gr.Row():
+                out_image = gr.Image(label="📏 Top Rim Width", height=600, width=800, visible=False)
+            with gr.Row():
+                with gr.Column():
+                    z="filler"
+                with gr.Column(elem_id="fit-box"):
+                    top_width_str = gr.Textbox(label="📏 Top Width:", interactive=False, elem_id='pretty-box', visible=False)
+                with gr.Column():
+                    z="filler"
+            
+            gr.Markdown("## 🎯 Prediction Accuracy Analysis", elem_id="centered-title")
+
+            with gr.Row():
+                gr.Markdown("### 🖼️ Reference Diagram", elem_id="centered-title")
+            with gr.Row():
+                ref_image = gr.Image(value="./static/reference.jpg", interactive=False, label="Measurement Guide", height=600)
+
+            unit_dropdown = gr.Radio(choices=["in", "cm"], label="Select Unit", value="in")
+
+            with gr.Row():
+                gr.Markdown("### 🧾 Predicted vs Actual Values Table", elem_id='centered-title')
+
+            with gr.Row():
+                gr.Markdown("### 📊 Predicted vs Actual Comparison")
+
+            with gr.Column():
+                # First row: a, b, c, d
+                with gr.Row():
+                    with gr.Column():
+                        a1 = gr.Number(label="a (Predicted)", interactive=False)
+                        a2 = gr.Number(label="a (Actual)")
+                    with gr.Column():
+                        b1 = gr.Number(label="b (Predicted)", interactive=False)
+                        b2 = gr.Number(label="b (Actual)")
+                with gr.Row():
+                    with gr.Column():
+                        c1 = gr.Number(label="c (Predicted)", interactive=False)
+                        c2 = gr.Number(label="c (Actual)")
+                    with gr.Column():
+                        d1 = gr.Number(label="d (Predicted)", interactive=False)
+                        d2 = gr.Number(label="d (Actual)")
+                
+                # Second row: e, f, g, h
+                with gr.Row():
+                    with gr.Column():
+                        e1 = gr.Number(label="e (Predicted)", interactive=False)
+                        e2 = gr.Number(label="e (Actual)")
+                    with gr.Column():
+                        f1 = gr.Number(label="f (Predicted)", interactive=False)
+                        f2 = gr.Number(label="f (Actual)")
+                with gr.Row():
+                    with gr.Column():
+                        g1 = gr.Number(label="g (Predicted)", interactive=False)
+                        g2 = gr.Number(label="g (Actual)")
+                    with gr.Column():
+                        h1 = gr.Number(label="h (Predicted)", interactive=False)
+                        h2 = gr.Number(label="h (Actual)")
+            
+            submit_btn = gr.Button("🎯 Evaluate Accuracy")
+            with gr.Row():
+                progress = gr.Markdown("")
+            
+            with gr.Column(visible=False) as error:
+                with gr.Row():
+                    with gr.Column():
+                        gr.Markdown("🧾 Individual Error %", elem_id='centered-title')
+                        result_json = gr.JSON(label="🧾 Individual Error %")
+                    with gr.Column():
+                        gr.Markdown("📉 Error Plot", elem_id='centered-title')
+                        error_plot = gr.Image(label="📉 Error Plot", height=400, width=600, interactive=False, visible=False)
+                with gr.Row():
+                    avg_error_text = gr.Textbox(label="🎯 Average Error %", interactive=False, elem_id='centered-title')
+                
+                with gr.Row():
+                    gr.Markdown("📥 Download All Results", elem_id='centered-title')
+                with gr.Row():
+                    download_all_file = gr.File(label="📦 Your Download")
+        
+        run_pipeline_btn.click(fn=lambda: gr.update(visible=True), outputs=group_to_show)
+        run_pipeline_btn.click(fn=lambda: gr.update(value="🔄 Processing... (Please Wait)"), outputs=process)
+        submit_btn.click(fn=lambda: gr.update(value="🔄 Calculating Error Percentages... (Please Wait)"), outputs=progress)
+            
+        import gradio as gr
+        
+        def get_predictions_by_unit(unit, closed_remaining_in, top_to_hole_line_inch,
+                                hole_width_inch, out_rimellipse_inch, rim_height_inch, out_dist_in):
+            # Compute values in inches
+            a1 = abs(closed_remaining_in - top_to_hole_line_inch)
+            b1 = top_to_hole_line_inch
+            c1 = hole_width_inch
+            d1 = float(out_rimellipse_inch["right_inner"]) * 2
+            e1 = float(out_rimellipse_inch["down_inner"]) * 2
+            f1 = float(out_rimellipse_inch["right_outer"]) * 2
+            g1 = rim_height_inch
+            h1 = out_dist_in
+
+            if unit == "in":
+                return [round(a1, 2), round(b1, 2), round(c1, 2), round(d1, 2), round(e1, 2), round(f1, 2), round(g1, 2), round(h1, 2)] + [gr.update(value="✅ Process Complete.")]
+            elif unit == "cm":
+                return [round(x * 2.54, 2) for x in [a1, b1, c1, d1, e1, f1, g1, h1]] + [gr.update(value="✅ Process Complete.")]
+            else:
+                return [0.0] * 8 + [gr.update(value="✅ Process Complete.")]
+
+        def compare_measurements(a1, b1, c1, d1, e1, f1, g1, h1, a2, b2, c2, d2, e2, f2, g2, h2):
+            a2, b2, c2, d2, e2, f2, g2, h2 = float(a2), float(b2), float(c2), float(d2), float(e2), float(f2), float(g2), float(h2)
+            a1, b1, c1, d1, e1, f1, g1, h1 = float(a1), float(b1), float(c1), float(d1), float(e1), float(f1), float(g1), float(h1)
+            def error(gt, pred):
+                if gt == 0:
+                    return "N/A"
+                return f"{abs(gt - pred) / gt * 100:.2f}%"
+
+            errors = {
+                "a": error(a2, a1),
+                "b": error(b2, b1),
+                "c": error(c2, c1),
+                "d": error(d2, d1),
+                "e": error(e2, e1),
+                "f": error(f2, f1),
+                "g": error(g2, g1),
+                "h": error(h2, h1)
             }
 
-            for name, img in image_dict.items():
-                if isinstance(img, np.ndarray):
-                    img = Image.fromarray(img)
-                if isinstance(img, Image.Image):
-                    img_path = os.path.join(temp_dir, f"{name}.png")
-                    img.save(img_path)
-                    zipf.write(img_path, arcname=f"{name}.png")
-
-            # Save a combined text summary
-            text_lines = [
-                "📋 Measurement Summary",
-                "----------------------",
-                f"ref_ratios_str:\n{ref_ratios_str}",
-                f"seat_measurement_str:\n{seat_measurement_str}",
-                f"rim_measurement_str:\n{rim_measurement_str}",
-                f"rim_height_str:\n{rim_height_str}",
-                f"hole_width_str:\n{hole_width_str}",
-                f"hole_to_top_str:\n{hole_to_top_str}",
-                f"direction_str:\n{direction_str}",
-                f"total_height_str:\n{total_height_str}",
-                f"remaining_str:\n{remaining_str}",
-                f"top_width_str:\n{top_width_str}",
-                "",
-                "📏 Predicted Values:",
-                f"a: {a1}",
-                f"b: {b1}",
-                f"c: {c1}",
-                f"d: {d1}",
-                f"e: {e1}",
-                f"f: {f1}",
-                f"g: {g1}",
-                f"h: {h1}",
-                "",
-                "📏 Actual Values:",
-                f"a: {a2}",
-                f"b: {b2}",
-                f"c: {c2}",
-                f"d: {d2}",
-                f"e: {e2}",
-                f"f: {f2}",
-                f"g: {g2}",
-                f"h: {h2}",
-                "",
-                "🎯 Accuracy",
-                f"result_json:\n{result_json}",
-                f"avg_error_text:\n{avg_error_text}"
+            valid_errors = [
+                abs(gt - pred) / gt * 100
+                for gt, pred in [
+                    (a2, a1), (b2, b1), (c2, c1), (d2, d1), (e2, e1), (f2, f1), (g2, g1), (h2, h1)
+                ] if gt != 0
             ]
-            summary_path = os.path.join(temp_dir, "summary.txt")
-            with open(summary_path, "w", encoding="utf-8") as f:
-                f.write("\n".join(text_lines))
-            zipf.write(summary_path, arcname="summary.txt")
 
-        return zip_path, gr.update(visible=True), gr.update(value="")
-    
-    submit_btn.click(
-        fn=download_all_results_combined,
-        inputs=[
+            avg_error = f"{sum(valid_errors)/len(valid_errors):.2f}%" if valid_errors else "N/A"
+
+            return errors, f"✅ Average Error: {avg_error}"
+
+        def update_preds(unit, closed_remaining_in_p11, top_to_hole_line_inch_p10, hole_width_inch_p9, out_rimellipse_inch_p7, rim_height_inch_p8, out_dist_in):
+            return get_predictions_by_unit(unit, closed_remaining_in_p11, top_to_hole_line_inch_p10,hole_width_inch_p9, out_rimellipse_inch_p7,rim_height_inch_p8, out_dist_in)
+        
+        unit_dropdown.change(
+            fn=update_preds,
+            inputs=[unit_dropdown, closed_remaining_in_p11, top_to_hole_line_inch_p10, hole_width_inch_p9, out_rimellipse_inch_p7, rim_height_inch_p8, out_dist_in],
+            outputs=[a1, b1, c1, d1, e1, f1, g1, h1, process]
+        )
+        
+        import matplotlib.pyplot as plt
+        from PIL import Image
+        import io
+        
+        def plot_error_graph(a2, b2, c2, d2, e2, f2, g2, h2, a1, b1, c1, d1, e1, f1, g1, h1):
+            labels = list("abcdefgh")
+            pred_vals = [float(x) for x in [a1, b1, c1, d1, e1, f1, g1, h1]]
+            true_vals = [float(x) for x in [a2, b2, c2, d2, e2, f2, g2, h2]]
+
+            errors = []
+            for pred, true in zip(pred_vals, true_vals):
+                if true == 0:
+                    errors.append(0)
+                else:
+                    err = abs(pred - true) / true * 100
+                    errors.append(err)
+
+            # Plotting
+            fig, ax = plt.subplots(figsize=(8, 4))
+            ax.bar(labels, errors, color="#f05a28")
+            ax.set_ylim(0, max(errors) * 1.2 if errors else 1)
+            ax.set_ylabel("Error (%)")
+            ax.set_xlabel("Parameter")
+            ax.set_title("Individual Error per Parameter")
+
+            # Convert plot to PIL Image
+            buf = io.BytesIO()
+            plt.tight_layout()
+            plt.savefig(buf, format='png')
+            plt.close(fig)
+            buf.seek(0)
+            img = Image.open(buf)
+
+            return gr.update(value=img, visible=True)
+        
+        submit_btn.click(
+            fn=lambda *args: (
+                compare_measurements(*args)[0],
+                compare_measurements(*args)[1],
+                (plot_error_graph(*args))
+            ),
+            inputs=[a1, b1, c1, d1, e1, f1, g1, h1, a2, b2, c2, d2, e2, f2, g2, h2],
+            outputs=[result_json, avg_error_text, error_plot]
+        )
+        
+        def download_all_results_combined(
             input1, input2, input3, gallery_segmentation_p4, out_ref_image_p5, ref_ratios_str, out_rim_image_p6, seat_measurement_str,
             out_rimellipse_image_p7, rim_measurement_str, rimheight_image_p8, rim_height_str, holewidth_image_p9, hole_width_str,
             rim_to_hole_img_p10, hole_to_top_str, ellipse_viz_image_p10, direction_str, rim_height_vis_p11, total_height_str,
             remaining_lid_img_p12, remaining_str, out_image, top_width_str, a1, b1, c1, d1, e1, f1, g1, h1, a2, b2, c2, d2, e2, f2, g2,
             h2, result_json, error_plot, avg_error_text
-        ],
-        outputs=[download_all_file, error, progress]
-    )
+        ):
+            import os, zipfile, tempfile
+            from PIL import Image
 
-    # 🔗 Pipeline chaining starting from Part 4
-    run_pipeline_btn.click(fn=segment_and_overlay_all_p4,
-        inputs=[
-            input1,
-            input2,
-            input3,
-            models_holes_p2,
-            models_rim_p2,
-            models_coinref_p2,
-            device_p2
-        ],
-        outputs=[
-            gallery_segmentation_p4,
-            binary_masks_p4,
-            image_dict_p4,
-        ]).\
-        then(fn=detect_and_plot_reference_p5,
-        inputs=[
-            image_dict_p4,
-            binary_masks_p4
-        ],
-        outputs=[
-            out_ref_image_p5,     # overlay image
-            out_ref_ratios_p5,    # ref_ratios to pass to next part
-            ref_ratios_str
-        ]).\
-        then(fn=analyze_rim_intersections_p6,
-        inputs=[
-            image_dict_p4,
-            binary_masks_p4,
-            out_ref_ratios_p5
-        ],
-        outputs=[
-            out_rim_image_p6,
-            out_rim_measurements_p6,
-            out_rim_measurements_cm_p6,
-            out_rim_measurements_inch_p6,
-            seat_measurement_str
-        ]).\
-        then(fn=analyze_rim_ellipse_red_p7,
-        inputs=[
-            image_dict_p4,
-            binary_masks_p4,
-            out_ref_ratios_p5
-        ],
-        outputs=[
-            out_rimellipse_image_p7,
-            out_rimellipse_ui_p7,
-            out_rimellipse_cm_p7,
-            out_rimellipse_inch_p7,
-            inner_top_p7,
-            dir_down_p7,
-            dir_right_p7,
-            rim_measurement_str
-        ]).\
-        then(fn=run_rim_height_analysis_p8,
-        inputs=[
-            btn_rimheight_p8,    # Trigger button as dummy input
-            image_dict_p4,
-            binary_masks_p4,
-            out_ref_ratios_p5,
-            inner_top_p7,
-            dir_down_p7
-        ],
-        outputs=[
-            rimheight_text_p8,
-            rimheight_image_p8,
-            rim_height_px_p8,
-            rim_height_cm_p8,
-            rim_height_inch_p8,
-            inner_top_p8,
-            rim_height_str
-        ]).\
-        then(fn=analyze_hole_width_perpendicular_p9,
-        inputs=[
-            btn_measure_holewidth_p9,  # trigger button dummy input
-            binary_masks_p4,
-            out_ref_ratios_p5,
-            image_dict_p4,
-            dir_right_p7,
-            inner_top_p7
-        ],
-        outputs=[
-            holewidth_image_p9,
-            hole_width_px_p9,
-            hole_width_cm_p9,
-            hole_width_inch_p9,
-            angle_deg_p9,
-            pt_min_p9,
-            pt_max_p9,
-            hole_width_str
-        ]).\
-        then(fn=compute_top_to_hole_distance_p10,
-        inputs=[
-            btn_top_to_hole_p10,    # trigger button
-            inner_top_p8,
-            pt_min_p9,
-            pt_max_p9,
-            dir_down_p7,
-            out_ref_ratios_p5,
-            image_dict_p4
-        ],
-        outputs=[
-            rim_to_hole_img_p10,
-            top_to_hole_line_px_p10,
-            top_to_hole_line_cm_p10,
-            top_to_hole_line_inch_p10,
-            angle_down_deg_p10,
-            angle_perp_deg_p10,
-            intersection_point_p10,
-            hole_to_top_str
-        ]).\
-        then(fn=analyze_closed_rim_orientation_p10,
-        inputs=[
-            btn_ellipse_orient_p10,   # trigger
-            binary_masks_p4,
-            image_dict_p4
-        ],
-        outputs=[
-            ellipse_viz_image_p10,
-            ellipse_angle_deg_p10,
-            ellipse_center_p10,
-            ellipse_dir_down_p10,
-            ellipse_dir_right_p10,
-            updated_binary_masks_p4,
-            direction_str
-        ]).\
-        then(fn=analyze_rim_height_on_closed_p11,
-        inputs=[
-            btn_rim_height_closed_p11,
-            binary_masks_p4,
-            input3,
-            ellipse_angle_deg_p10,
-            out_ref_ratios_p5,
-            rim_height_cm_p8
-        ],
-        outputs=[
-            rim_height_vis_p11,
-            rim_height_cm_p11,
-            rim_height_in_p11,
-            full_rim_height_cm_p11,
-            full_rim_height_in_p11,
-            closed_remaining_cm_p11,
-            closed_remaining_in_p11,
-            pt_start_p11,
-            total_height_str
-        ]).\
-        then(fn=draw_remaining_closed_portion_p12,
-        inputs=[
-            btn_draw_remaining_p12,
-            pt_start_p11,
-            closed_remaining_cm_p11,
-            out_ref_ratios_p5,
-            ellipse_dir_down_p10,
-            input3
-        ],
-        outputs=[
-            remaining_lid_img_p12,
-            remaining_angle_deg_p12,
-            pt_start_p12,
-            pt_end_p12,
-            remaining_str
-        ]).\
-        then(fn=analyze_top_rim_width_p13,
-        inputs=[
-            btn_measure,
-            binary_masks_p4,
-            ellipse_center_p10,
-            ellipse_angle_deg_p10,
-            out_ref_ratios_p5,
-            input3,
-        ],
-        outputs=[
-            out_image,
-            out_pt_top,
-            out_pt1,
-            out_pt2,
-            out_dist_px,
-            out_dist_cm,
-            out_dist_in,
-            out_angle_deg,
-            top_width_str
-        ]).\
-        then(fn=update_preds,
-        inputs=[unit_dropdown, closed_remaining_in_p11, top_to_hole_line_inch_p10, hole_width_inch_p9, out_rimellipse_inch_p7, rim_height_inch_p8, out_dist_in],
-        outputs=[a1, b1, c1, d1, e1, f1, g1, h1, process])
-    
-    with gr.Row():
-        gr.Markdown("")
-    with gr.Row():
-        gr.Markdown("")
-    with gr.Row():
-        gr.Markdown("")
-    with gr.Row():
-        gr.Markdown("\nFor any queries, Feel free to contact 📧 core.atsc@gmail.com", elem_id='centered-title')
-    
-    with gr.Row():
-        gr.Markdown(
-            """
-            ---
-            #### 👨‍💻 Created by Heet Savaliya  
-            📧 Email: savaliyaheet19@gmail.com  
-            🔗  [LinkedIn](https://www.linkedin.com/in/heet-savaliya-03b863252/)
-            🔗  [GitHub](https://github.com/heetsavaliya)  
-            © 2025 Heet Savaliya
-            """,
-            elem_id="footer-text",
+            temp_dir = tempfile.mkdtemp()
+            zip_path = os.path.join(tempfile.gettempdir(), "all_results.zip")
+
+            with zipfile.ZipFile(zip_path, "w") as zipf:
+
+                # Save images if present
+                image_dict = {
+                    "input1": input1,
+                    "input2": input2,
+                    "input3": input3,
+                    "gallery_segmentation_p4": gallery_segmentation_p4,
+                    "out_ref_image_p5": out_ref_image_p5,
+                    "out_rim_image_p6": out_rim_image_p6,
+                    "out_rimellipse_image_p7": out_rimellipse_image_p7,
+                    "rimheight_image_p8": rimheight_image_p8,
+                    "holewidth_image_p9": holewidth_image_p9,
+                    "rim_to_hole_img_p10": rim_to_hole_img_p10,
+                    "ellipse_viz_image_p10": ellipse_viz_image_p10,
+                    "rim_height_vis_p11": rim_height_vis_p11,
+                    "remaining_lid_img_p12": remaining_lid_img_p12,
+                    "out_image": out_image,
+                    "error_plot": error_plot
+                }
+
+                for name, img in image_dict.items():
+                    if isinstance(img, np.ndarray):
+                        img = Image.fromarray(img)
+                    if isinstance(img, Image.Image):
+                        img_path = os.path.join(temp_dir, f"{name}.png")
+                        img.save(img_path)
+                        zipf.write(img_path, arcname=f"{name}.png")
+
+                # Save a combined text summary
+                text_lines = [
+                    "📋 Measurement Summary",
+                    "----------------------",
+                    f"ref_ratios_str:\n{ref_ratios_str}",
+                    f"seat_measurement_str:\n{seat_measurement_str}",
+                    f"rim_measurement_str:\n{rim_measurement_str}",
+                    f"rim_height_str:\n{rim_height_str}",
+                    f"hole_width_str:\n{hole_width_str}",
+                    f"hole_to_top_str:\n{hole_to_top_str}",
+                    f"direction_str:\n{direction_str}",
+                    f"total_height_str:\n{total_height_str}",
+                    f"remaining_str:\n{remaining_str}",
+                    f"top_width_str:\n{top_width_str}",
+                    "",
+                    "📏 Predicted Values:",
+                    f"a: {a1}",
+                    f"b: {b1}",
+                    f"c: {c1}",
+                    f"d: {d1}",
+                    f"e: {e1}",
+                    f"f: {f1}",
+                    f"g: {g1}",
+                    f"h: {h1}",
+                    "",
+                    "📏 Actual Values:",
+                    f"a: {a2}",
+                    f"b: {b2}",
+                    f"c: {c2}",
+                    f"d: {d2}",
+                    f"e: {e2}",
+                    f"f: {f2}",
+                    f"g: {g2}",
+                    f"h: {h2}",
+                    "",
+                    "🎯 Accuracy",
+                    f"result_json:\n{result_json}",
+                    f"avg_error_text:\n{avg_error_text}"
+                ]
+                summary_path = os.path.join(temp_dir, "summary.txt")
+                with open(summary_path, "w", encoding="utf-8") as f:
+                    f.write("\n".join(text_lines))
+                zipf.write(summary_path, arcname="summary.txt")
+
+            return zip_path, gr.update(visible=True), gr.update(value="")
+        
+        submit_btn.click(
+            fn=download_all_results_combined,
+            inputs=[
+                input1, input2, input3, gallery_segmentation_p4, out_ref_image_p5, ref_ratios_str, out_rim_image_p6, seat_measurement_str,
+                out_rimellipse_image_p7, rim_measurement_str, rimheight_image_p8, rim_height_str, holewidth_image_p9, hole_width_str,
+                rim_to_hole_img_p10, hole_to_top_str, ellipse_viz_image_p10, direction_str, rim_height_vis_p11, total_height_str,
+                remaining_lid_img_p12, remaining_str, out_image, top_width_str, a1, b1, c1, d1, e1, f1, g1, h1, a2, b2, c2, d2, e2, f2, g2,
+                h2, result_json, error_plot, avg_error_text
+            ],
+            outputs=[download_all_file, error, progress]
         )
+
+        # 🔗 Pipeline chaining starting from Part 4
+        run_pipeline_btn.click(fn=segment_and_overlay_all_p4,
+            inputs=[
+                input1,
+                input2,
+                input3,
+                models_holes_p2,
+                models_rim_p2,
+                models_coinref_p2,
+                device_p2
+            ],
+            outputs=[
+                gallery_segmentation_p4,
+                binary_masks_p4,
+                image_dict_p4,
+            ]).\
+            then(fn=detect_and_plot_reference_p5,
+            inputs=[
+                image_dict_p4,
+                binary_masks_p4
+            ],
+            outputs=[
+                out_ref_image_p5,     # overlay image
+                out_ref_ratios_p5,    # ref_ratios to pass to next part
+                ref_ratios_str
+            ]).\
+            then(fn=analyze_rim_intersections_p6,
+            inputs=[
+                image_dict_p4,
+                binary_masks_p4,
+                out_ref_ratios_p5
+            ],
+            outputs=[
+                out_rim_image_p6,
+                out_rim_measurements_p6,
+                out_rim_measurements_cm_p6,
+                out_rim_measurements_inch_p6,
+                seat_measurement_str
+            ]).\
+            then(fn=analyze_rim_ellipse_red_p7,
+            inputs=[
+                image_dict_p4,
+                binary_masks_p4,
+                out_ref_ratios_p5
+            ],
+            outputs=[
+                out_rimellipse_image_p7,
+                out_rimellipse_ui_p7,
+                out_rimellipse_cm_p7,
+                out_rimellipse_inch_p7,
+                inner_top_p7,
+                dir_down_p7,
+                dir_right_p7,
+                rim_measurement_str
+            ]).\
+            then(fn=run_rim_height_analysis_p8,
+            inputs=[
+                btn_rimheight_p8,    # Trigger button as dummy input
+                image_dict_p4,
+                binary_masks_p4,
+                out_ref_ratios_p5,
+                inner_top_p7,
+                dir_down_p7
+            ],
+            outputs=[
+                rimheight_text_p8,
+                rimheight_image_p8,
+                rim_height_px_p8,
+                rim_height_cm_p8,
+                rim_height_inch_p8,
+                inner_top_p8,
+                rim_height_str
+            ]).\
+            then(fn=analyze_hole_width_perpendicular_p9,
+            inputs=[
+                btn_measure_holewidth_p9,  # trigger button dummy input
+                binary_masks_p4,
+                out_ref_ratios_p5,
+                image_dict_p4,
+                dir_right_p7,
+                inner_top_p7
+            ],
+            outputs=[
+                holewidth_image_p9,
+                hole_width_px_p9,
+                hole_width_cm_p9,
+                hole_width_inch_p9,
+                angle_deg_p9,
+                pt_min_p9,
+                pt_max_p9,
+                hole_width_str
+            ]).\
+            then(fn=compute_top_to_hole_distance_p10,
+            inputs=[
+                btn_top_to_hole_p10,    # trigger button
+                inner_top_p8,
+                pt_min_p9,
+                pt_max_p9,
+                dir_down_p7,
+                out_ref_ratios_p5,
+                image_dict_p4
+            ],
+            outputs=[
+                rim_to_hole_img_p10,
+                top_to_hole_line_px_p10,
+                top_to_hole_line_cm_p10,
+                top_to_hole_line_inch_p10,
+                angle_down_deg_p10,
+                angle_perp_deg_p10,
+                intersection_point_p10,
+                hole_to_top_str
+            ]).\
+            then(fn=analyze_closed_rim_orientation_p10,
+            inputs=[
+                btn_ellipse_orient_p10,   # trigger
+                binary_masks_p4,
+                image_dict_p4
+            ],
+            outputs=[
+                ellipse_viz_image_p10,
+                ellipse_angle_deg_p10,
+                ellipse_center_p10,
+                ellipse_dir_down_p10,
+                ellipse_dir_right_p10,
+                updated_binary_masks_p4,
+                direction_str
+            ]).\
+            then(fn=analyze_rim_height_on_closed_p11,
+            inputs=[
+                btn_rim_height_closed_p11,
+                binary_masks_p4,
+                input3,
+                ellipse_angle_deg_p10,
+                out_ref_ratios_p5,
+                rim_height_cm_p8
+            ],
+            outputs=[
+                rim_height_vis_p11,
+                rim_height_cm_p11,
+                rim_height_in_p11,
+                full_rim_height_cm_p11,
+                full_rim_height_in_p11,
+                closed_remaining_cm_p11,
+                closed_remaining_in_p11,
+                pt_start_p11,
+                total_height_str
+            ]).\
+            then(fn=draw_remaining_closed_portion_p12,
+            inputs=[
+                btn_draw_remaining_p12,
+                pt_start_p11,
+                closed_remaining_cm_p11,
+                out_ref_ratios_p5,
+                ellipse_dir_down_p10,
+                input3
+            ],
+            outputs=[
+                remaining_lid_img_p12,
+                remaining_angle_deg_p12,
+                pt_start_p12,
+                pt_end_p12,
+                remaining_str
+            ]).\
+            then(fn=analyze_top_rim_width_p13,
+            inputs=[
+                btn_measure,
+                binary_masks_p4,
+                ellipse_center_p10,
+                ellipse_angle_deg_p10,
+                out_ref_ratios_p5,
+                input3,
+            ],
+            outputs=[
+                out_image,
+                out_pt_top,
+                out_pt1,
+                out_pt2,
+                out_dist_px,
+                out_dist_cm,
+                out_dist_in,
+                out_angle_deg,
+                top_width_str
+            ]).\
+            then(fn=update_preds,
+            inputs=[unit_dropdown, closed_remaining_in_p11, top_to_hole_line_inch_p10, hole_width_inch_p9, out_rimellipse_inch_p7, rim_height_inch_p8, out_dist_in],
+            outputs=[a1, b1, c1, d1, e1, f1, g1, h1, process])
+        
+        with gr.Row():
+            gr.Markdown("")
+        with gr.Row():
+            gr.Markdown("")
+        with gr.Row():
+            gr.Markdown("")
+        with gr.Row():
+            gr.Markdown("\nFor any queries, Feel free to contact 📧 core.atsc@gmail.com", elem_id='centered-title')
+        
+        with gr.Row():
+            gr.Markdown(
+                """
+                ---
+                #### 👨‍💻 Created by Heet Savaliya  
+                📧 Email: savaliyaheet19@gmail.com  
+                🔗  [LinkedIn](https://www.linkedin.com/in/heet-savaliya-03b863252/)
+                🔗  [GitHub](https://github.com/heetsavaliya)  
+                © 2025 Heet Savaliya
+                """,
+                elem_id="footer-text",
+            )
 
 # 🚀 Launch App
 if __name__ == "__main__":
