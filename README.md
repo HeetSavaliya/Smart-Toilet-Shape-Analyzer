@@ -4,6 +4,8 @@
 
 ---
 
+# Try using this app here [🧠 Smart Toilet Shape Analyzer](https://huggingface.co/spaces/HeetSavaliya/Final_App)
+
 ## 🚀 Overview
 
 This web-based app performs smart toilet rim analysis using AI segmentation models and ellipse fitting. It's designed to process 3 images of a toilet setup and calculate precise measurements and error analysis using a reference object.
