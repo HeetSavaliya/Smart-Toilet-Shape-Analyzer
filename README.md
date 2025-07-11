@@ -1,4 +1,6 @@
-# 🧠 AI Rim & Shape Analyzer — v1.0
+# 🧠 AI Rim & Shape Analyzer — v1.1
+
+- minor ui changes from v1.0 and added auth token so that only authorised users can see this as a website.
 
 **AI-powered toilet image segmentation and rim measurement tool**
 
